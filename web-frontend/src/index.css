@@ -1,20 +1,185 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  /* Common Core Colors */
+  --primary: #6366f1;
+  --primary-soft: rgba(99, 102, 241, 0.1);
+  --accent: #a855f7;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #f43f5e;
+
+  /* Default - Light Theme */
+  --bg-color: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --surface-1: rgba(255, 255, 255, 0.8);
+  --surface-2: rgba(255, 255, 255, 0.4);
+  --border-glass: rgba(0, 0, 0, 0.04);
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --glass-glow: rgba(99, 102, 241, 0.05);
+  --card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  --sidebar-active: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%);
+  --text-premium-start: #1e293b;
+  --text-premium-end: #6366f1;
+}
+
+.dark {
+  /* Dark Theme Overrides */
+  --bg-color: #0a0f1a;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --surface-1: rgba(30, 41, 59, 0.8);
+  --surface-2: rgba(30, 41, 59, 0.4);
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --glass-glow: rgba(99, 102, 241, 0.1);
+  --card-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(30, 41, 59, 0.3) 100%);
+  --sidebar-active: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.03) 100%);
+  --text-premium-start: #ffffff;
+  --text-premium-end: #a5b4fc;
+}
 
 body {
-  background: linear-gradient(135deg, #1f1c2c 0%, #928dab 100%);
-  color: white;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
   min-height: 100vh;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s;
+  overflow-x: hidden;
 }
 
-.glass {
-  background: rgba(255, 255, 255, 0.1);
+/* Background Effects */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 60% at 80% 30%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 80% at 70% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 10px;
+  border: 2px solid var(--bg-color);
+}
+
+/* Glass Panels */
+.glass-depth-refined {
+  background: var(--surface-1);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 8px 32px var(--shadow-color);
+}
+
+.glass-card {
+  background: var(--card-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 1rem;
+  border: 1px solid var(--border-glass);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.btn-primary {
-  @apply bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-all duration-300;
+.glass-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px var(--shadow-color);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+/* 3D and Organic Styles */
+.perspective-container {
+  perspective: 1200px;
+}
+
+.card-3d {
+  transform-style: preserve-3d;
+}
+
+.lift-3d {
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s;
+}
+
+.lift-3d:hover {
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow: 0 25px 50px -12px var(--shadow-color);
+}
+
+.blob-shape {
+  border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+  animation: blob-morph 10s ease-in-out infinite alternate;
+}
+
+@keyframes blob-morph {
+  0% {
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+  }
+
+  100% {
+    border-radius: 70% 30% 46% 54% / 30% 29% 71% 70%;
+  }
+}
+
+.nav-item-active {
+  background: var(--sidebar-active);
+  border-left: 3px solid var(--primary);
+}
+
+.text-premium {
+  background: linear-gradient(135deg, var(--text-premium-start) 30%, var(--text-premium-end) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Utility Overrides for Theme */
+.text-slate-400 {
+  color: var(--text-secondary) !important;
+}
+
+.text-slate-200 {
+  color: var(--text-primary) !important;
+}
+
+.bg-slate-800 {
+  background-color: var(--surface-1) !important;
+}
+
+.border-slate-700 {
+  border-color: var(--border-glass) !important;
+}
+
+.bg-slate-900 {
+  background-color: var(--bg-color) !important;
+}
+
+/* Dashboard refinements */
+.stat-card-3d {
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card-3d::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass-glow);
+  z-index: -1;
+  opacity: 0.5;
 }

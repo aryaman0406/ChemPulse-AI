@@ -1,0 +1,21 @@
+Equipment Name,Type,Flowrate,Pressure,Temperature
+Reactor-A,Pressure Vessel,150.5,75.2,145.8
+Mixer-B,Agitator,80.0,45.0,65.2
+Heater-C,Heat Exchanger,120.4,62.1,155.4
+Pump-D,Centrifugal Pump,195.0,82.5,45.8
+Reactor-E,Pressure Vessel,145.2,88.4,138.2
+Cooler-F,Heat Exchanger,110.0,40.1,25.4
+Column-G,Distillation,210.5,95.2,185.4
+Vessel-H,Storage,50.0,15.2,35.4
+Mixer-I,Agitator,95.4,52.8,72.1
+Pump-J,Centrifugal Pump,180.2,78.4,48.2
+Column-K,Distillation,205.1,102.5,195.8
+Reactor-L,Pressure Vessel,155.8,79.2,148.5
+Mixer-M,Agitator,85.2,48.4,68.4
+Heater-N,Heat Exchanger,125.4,65.2,162.1
+Pump-O,Centrifugal Pump,188.4,85.2,42.5
+Column-P,Distillation,212.4,98.5,188.2
+Vessel-Q,Storage,55.2,18.4,32.5
+Mixer-R,Agitator,92.5,50.2,75.4
+Pump-S,Centrifugal Pump,185.2,76.5,46.2
+Reactor-T,Pressure Vessel,148.5,82.1,142.5

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.venv
+env/
+instance/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+.npm
+build/
+
+# Desktop App
+desktop-app/__pycache__/
+desktop-app/*.spec
+desktop-app/dist/
+desktop-app/build/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
