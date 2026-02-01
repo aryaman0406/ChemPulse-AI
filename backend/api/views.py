@@ -449,10 +449,11 @@ def send_alert_email(alert_type, equipment_name, message, email_address):
                 message=message,
                 from_email=django_settings.DEFAULT_FROM_EMAIL if hasattr(django_settings, 'DEFAULT_FROM_EMAIL') else 'noreply@chemviz.local',
                 recipient_list=[email_address],
-                fail_silently=True
+                fail_silently=False
             )
             was_successful = True
-        except Exception:
+        except Exception as e:
+            print(f"ERROR: Email send failed: {e}")
             was_successful = False
         
         # Log the alert

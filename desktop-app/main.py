@@ -1087,35 +1087,128 @@ class MainWindow(QMainWindow):
     def setup_maintenance_tab(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(30,30,30,30)
+        layout.setSpacing(20)
         
+        # Header Section
         header_box = QHBoxLayout()
         header = QLabel("Maintenance Schedule 📅")
         header.setObjectName("Header")
         
+        btn_add = QPushButton("Schedule New Task")
+        btn_add.setFixedWidth(180)
+        btn_add.setCursor(Qt.PointingHandCursor)
+        btn_add.clicked.connect(self.add_maintenance_task_dialog)
+        
         btn_auto = QPushButton("Auto-Schedule (ML)")
-        btn_auto.setFixedWidth(200)
+        btn_auto.setFixedWidth(180)
+        btn_auto.setStyleSheet("background-color: #8b5cf6;")
         btn_auto.clicked.connect(self.run_auto_schedule)
         
-        btn_refresh = QPushButton("Refresh List")
-        btn_refresh.setFixedWidth(120)
+        btn_refresh = QPushButton("Refresh")
+        btn_refresh.setFixedWidth(100)
         btn_refresh.setObjectName("SecondaryButton")
         btn_refresh.clicked.connect(self.load_maintenance)
         
         header_box.addWidget(header)
         header_box.addStretch()
+        header_box.addWidget(btn_add)
         header_box.addWidget(btn_auto)
         header_box.addWidget(btn_refresh)
         
         layout.addLayout(header_box)
+
+        # Summary Stats Bar
+        self.maint_stats_layout = QHBoxLayout()
+        self.maint_stats_layout.setSpacing(15)
+        layout.addLayout(self.maint_stats_layout)
         
+        # Maintenance Table
         self.maint_table = QTableWidget()
         self.maint_table.setColumnCount(6)
-        self.maint_table.setHorizontalHeaderLabels(["Equipment", "Task Title", "Scheduled Date", "Priority", "Status", "Actions"])
+        self.maint_table.setHorizontalHeaderLabels(["Equipment", "Task Details", "Scheduled", "Priority", "Status", "Actions"])
         self.maint_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.maint_table.setAlternatingRowColors(True)
+        self.maint_table.setShowGrid(False)
+        self.maint_table.verticalHeader().setVisible(False)
+        
         layout.addWidget(self.maint_table)
         
         self.maintenance_tab.setLayout(layout)
         self.load_maintenance()
+
+    def add_maintenance_task_dialog(self):
+        # Mini dialog to add maintenance
+        from PyQt5.QtWidgets import QDialog, QDateEdit, QTextEdit
+        
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Schedule Maintenance")
+        dialog.setFixedWidth(400)
+        dialog.setStyleSheet(self.styleSheet())
+        
+        d_layout = QVBoxLayout(dialog)
+        d_layout.setContentsMargins(20,20,20,20)
+        d_layout.setSpacing(15)
+        
+        title_lbl = QLabel("New Maintenance Task")
+        title_lbl.setStyleSheet("font-size: 18px; font-weight: bold; color: #6366f1;")
+        d_layout.addWidget(title_lbl)
+        
+        form = QFormLayout()
+        
+        inp_equipment = QLineEdit()
+        inp_equipment.setPlaceholderText("Equipment Name")
+        
+        inp_title = QLineEdit()
+        inp_title.setPlaceholderText("e.g. Filter Replacement")
+        
+        inp_date = QDateEdit(QDate.currentDate())
+        inp_date.setCalendarPopup(True)
+        
+        inp_priority = QComboBox()
+        inp_priority.addItems(["Low", "Medium", "High", "Critical"])
+        inp_priority.setCurrentText("Medium")
+        
+        inp_notes = QLineEdit()
+        inp_notes.setPlaceholderText("Optional notes...")
+        
+        form.addRow("Equipment:", inp_equipment)
+        form.addRow("Task Title:", inp_title)
+        form.addRow("Date:", inp_date)
+        form.addRow("Priority:", inp_priority)
+        form.addRow("Notes:", inp_notes)
+        
+        d_layout.addLayout(form)
+        
+        btn_box = QHBoxLayout()
+        btn_save = QPushButton("Schedule")
+        btn_save.clicked.connect(dialog.accept)
+        
+        btn_cancel = QPushButton("Cancel")
+        btn_cancel.setObjectName("SecondaryButton")
+        btn_cancel.clicked.connect(dialog.reject)
+        
+        btn_box.addWidget(btn_cancel)
+        btn_box.addWidget(btn_save)
+        d_layout.addLayout(btn_box)
+        
+        if dialog.exec_() == QDialog.Accepted:
+            payload = {
+                "equipment_name": inp_equipment.text(),
+                "title": inp_title.text(),
+                "scheduled_date": inp_date.date().toString(Qt.ISODate),
+                "priority": inp_priority.currentText().lower(),
+                "notes": inp_notes.text()
+            }
+            try:
+                r = requests.post(API_URL + "maintenance/", auth=self.auth, json=payload)
+                if r.status_code == 201:
+                    QMessageBox.information(self, "Success", "Task scheduled successfully!")
+                    self.load_maintenance()
+                else:
+                    QMessageBox.warning(self, "Error", f"Failed: {r.text}")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e))
+
 
     def load_maintenance(self):
         try:
@@ -1123,22 +1216,82 @@ class MainWindow(QMainWindow):
             if r.status_code == 200:
                 data = r.json()
                 schedules = data.get('schedules', [])
+                summary = data.get('summary', {})
+                
+                # Update Stats Cards
+                for i in reversed(range(self.maint_stats_layout.count())): 
+                    w = self.maint_stats_layout.itemAt(i).widget()
+                    if w: w.setParent(None)
+                
+                self.maint_stats_layout.addWidget(self.create_stat_card("TOTAL", summary.get('total', 0), "#818cf8"))
+                self.maint_stats_layout.addWidget(self.create_stat_card("UPCOMING", summary.get('upcoming_7_days', 0), "#fbbf24"))
+                self.maint_stats_layout.addWidget(self.create_stat_card("OVERDUE", summary.get('overdue', 0), "#f43f5e"))
+                self.maint_stats_layout.addWidget(self.create_stat_card("COMPLETED", summary.get('completed', 0), "#10b981"))
+                
+                # Update Table
                 self.maint_table.setRowCount(len(schedules))
                 for i, s in enumerate(schedules):
                     self.maint_table.setItem(i, 0, QTableWidgetItem(s['equipment_name']))
                     self.maint_table.setItem(i, 1, QTableWidgetItem(s['title']))
                     self.maint_table.setItem(i, 2, QTableWidgetItem(s['scheduled_date']))
-                    self.maint_table.setItem(i, 3, QTableWidgetItem(s['priority'].upper()))
-                    self.maint_table.setItem(i, 4, QTableWidgetItem(s['status'].capitalize()))
                     
-                    btn_done = QPushButton("Mark Done")
-                    btn_done.setMaximumWidth(100)
+                    # Priority with Color
+                    p_text = s['priority'].upper()
+                    p_item = QTableWidgetItem(p_text)
+                    if p_text == "CRITICAL": p_item.setForeground(Qt.red)
+                    elif p_text == "HIGH": p_item.setForeground(Qt.darkRed)
+                    elif p_text == "MEDIUM": p_item.setForeground(Qt.yellow)
+                    else: p_item.setForeground(Qt.green)
+                    self.maint_table.setItem(i, 3, p_item)
+                    
+                    # Status with Icon/Indicator
+                    status = s['status'].capitalize().replace('_', ' ')
+                    status_item = QTableWidgetItem(status)
+                    if s['status'] == 'completed': status_item.setForeground(Qt.green)
+                    elif s['status'] == 'overdue': status_item.setForeground(Qt.red)
+                    self.maint_table.setItem(i, 4, status_item)
+                    
+                    # Actions
+                    actions_container = QWidget()
+                    a_layout = QHBoxLayout(actions_container)
+                    a_layout.setContentsMargins(4,4,4,4)
+                    a_layout.setSpacing(8)
+                    
+                    btn_done = QPushButton("✓")
+                    btn_done.setToolTip("Mark Done")
+                    btn_done.setFixedSize(30, 30)
                     btn_done.clicked.connect(lambda checked, s_id=s['id']: self.mark_maint_completed(s_id))
                     if s['status'] == 'completed':
                         btn_done.setEnabled(False)
-                        btn_done.setText("Completed")
-                    self.maint_table.setCellWidget(i, 5, btn_done)
-        except: pass
+                        btn_done.setStyleSheet("background-color: #10b981; opacity: 0.5;")
+                    
+                    btn_delete = QPushButton("✕")
+                    btn_delete.setToolTip("Delete Task")
+                    btn_delete.setFixedSize(30, 30)
+                    btn_delete.setStyleSheet("background-color: #f43f5e;")
+                    btn_delete.clicked.connect(lambda checked, s_id=s['id']: self.delete_maintenance(s_id))
+                    
+                    a_layout.addWidget(btn_done)
+                    a_layout.addWidget(btn_delete)
+                    a_layout.addStretch()
+                    self.maint_table.setCellWidget(i, 5, actions_container)
+        except Exception as e: 
+            print(f"Load maintenance error: {e}")
+
+    def delete_maintenance(self, maint_id):
+        reply = QMessageBox.question(self, 'Confirm Delete', 
+                                   "Are you sure you want to delete this maintenance schedule?",
+                                   QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        
+        if reply == QMessageBox.Yes:
+            try:
+                r = requests.delete(API_URL + f"maintenance/{maint_id}/", auth=self.auth)
+                if r.status_code == 204:
+                    self.load_maintenance()
+                else:
+                    QMessageBox.warning(self, "Error", "Failed to delete task.")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e))
 
     def run_auto_schedule(self):
         try:
@@ -1146,6 +1299,8 @@ class MainWindow(QMainWindow):
             if r.status_code == 201:
                 QMessageBox.information(self, "Success", r.json().get('message'))
                 self.load_maintenance()
+            else:
+                QMessageBox.warning(self, "Notice", r.json().get('message', 'No new tasks scheduled.'))
         except: QMessageBox.critical(self, "Error", "Scheduling failed.")
 
     def mark_maint_completed(self, maint_id):
@@ -1154,6 +1309,7 @@ class MainWindow(QMainWindow):
             if r.status_code == 200:
                 self.load_maintenance()
         except: pass
+
 
 
 

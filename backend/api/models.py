@@ -54,7 +54,7 @@ class AlertSettings(models.Model):
         ('daily', 'Daily Digest'),
     ]
     
-    email_enabled = models.BooleanField(default=False)
+    email_enabled = models.BooleanField(default=True)
     email_address = models.EmailField(blank=True, null=True)
     alert_on_critical = models.BooleanField(default=True)
     alert_on_warning = models.BooleanField(default=False)

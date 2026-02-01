@@ -19,7 +19,10 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 ChartJS.defaults.color = '#94a3b8';
 ChartJS.defaults.borderColor = '#334155';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+// API URL - uses environment variable in production, localhost in development
+const API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : 'http://127.0.0.1:8000/api';
 
 
 // --- Components ---
@@ -115,7 +118,7 @@ function App() {
 
   // Alert Settings
   const [alertSettings, setAlertSettings] = useState<any>({
-    email_enabled: false,
+    email_enabled: true,
     email_address: '',
     alert_on_critical: true,
     alert_on_warning: false,
@@ -1783,6 +1786,10 @@ function App() {
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Task Title</label>
                             <input value={newMaintenance.title} onChange={(e) => setNewMaintenance({ ...newMaintenance, title: e.target.value })} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none" placeholder="e.g. Pump Seal Replacement" />
                           </div>
+                          <div className="col-span-2">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Description</label>
+                            <textarea value={newMaintenance.description} onChange={(e) => setNewMaintenance({ ...newMaintenance, description: e.target.value })} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none min-h-[100px]" placeholder="Detailed description of the task..." />
+                          </div>
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Equipment Name</label>
                             <input value={newMaintenance.equipment_name} onChange={(e) => setNewMaintenance({ ...newMaintenance, equipment_name: e.target.value })} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none" placeholder="Reactor A" />
@@ -1790,6 +1797,10 @@ function App() {
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Scheduled Date</label>
                             <input type="date" value={newMaintenance.scheduled_date} onChange={(e) => setNewMaintenance({ ...newMaintenance, scheduled_date: e.target.value })} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Scheduled Time</label>
+                            <input type="time" value={newMaintenance.scheduled_time} onChange={(e) => setNewMaintenance({ ...newMaintenance, scheduled_time: e.target.value })} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none" />
                           </div>
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Priority</label>
@@ -1803,6 +1814,10 @@ function App() {
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Assigned To</label>
                             <input value={newMaintenance.assigned_to} onChange={(e) => setNewMaintenance({ ...newMaintenance, assigned_to: e.target.value })} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none" placeholder="Name or Team" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Duration (min)</label>
+                            <input type="number" value={newMaintenance.estimated_duration} onChange={(e) => setNewMaintenance({ ...newMaintenance, estimated_duration: parseInt(e.target.value) })} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none" />
                           </div>
                         </div>
 
